@@ -11,14 +11,16 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
 import pandas as pd
+from sklearn.decomposition import TruncatedSVD
 
 original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
 train_data = original_train_data[0:7000]
 topred = original_train_data[7000:10000]
 #print topred
 
+svd = TruncatedSVD(n_components=150)
 
-clf = KNN(k_neighbours=20, components=150)
+clf = KNN(k_neighbours=20, dense=True)
 
 le = preprocessing.LabelEncoder()
 
@@ -27,10 +29,14 @@ y = le.fit_transform(train_data['Category'])
 
 cv = CountVectorizer(stop_words=ENGLISH_STOP_WORDS)
 X = cv.fit_transform(train_data['Content'])
+X = svd.fit_transform(X)
 
 clf.fit(X, y)    
-truepreds = le.fit_transform(topred['Category'])
-topred = cv.fit_transform(topred['Content'])
+truepreds = le.transform(topred['Category'])
+
+topred = cv.transform(topred['Content'])
+topred = svd.transform(topred)
+
 predictions = clf.predict(topred)
 
 

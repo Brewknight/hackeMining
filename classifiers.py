@@ -1,14 +1,15 @@
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 from sklearn.ensemble import RandomForestClassifier
+
 from sklearn.metrics import classification_report
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
-
 
 from sklearn import preprocessing
 import pandas as pd
@@ -17,14 +18,13 @@ from sklearn import svm
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
-from sklearn.model_selection import GridSearchCV
 
 original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
 
 #print len(train_data)
 Classifiers = dict()
 Classifiers['RandomForest'] = RandomForestClassifier()
-Classifiers['SupportVector'] = svm.SVC(kernel='linear')
+Classifiers['SupportVector'] = svm.SVC(C=10, kernel='rbf', gamma=0.0001)
 Classifiers['MultinomialNB'] = MultinomialNB()
 
 clf = Classifiers['SupportVector']
@@ -35,18 +35,41 @@ clf = Classifiers['SupportVector']
 #   {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
 #  ]
 
-#gscv = GridSearchCV(estimator=Classifiers['SupportVector'], param_grid=param_grid)
+# gscv = GridSearchCV(estimator=Classifiers['SupportVector'], param_grid=param_grid)
+titles = original_train_data['Title']
+contents = original_train_data['Content']
+contentslist = list()
+for tit, con, in it.izip(titles, contents):
+    words = con.split()
+    length = len(words)
+    #print length
+    titwords = tit.split()
+    titlength = len(tit)
+    for i in xrange((length / titlength) / 10):
+        con += tit
+    contentslist.append(con)
 
+ps = PorterStemmer()
+stemmedlist = list()
+for doc in contentslist:
+    doc.decode("utf8")
+    words = word_tokenize(doc)
+    stemmed = ""
+    for word in words:
+        print word
+        stemmed += ps.stem(word)
+        #print stemmed
+    stemmedlist.append(stemmed)
+asdsadfd
 le = preprocessing.LabelEncoder()
 
 y = le.fit_transform(original_train_data['Category'])
 
 cv = CountVectorizer(stop_words=ENGLISH_STOP_WORDS)
-X = cv.fit_transform(original_train_data['Content'])
-
-#gscv.fit(X, y)
-#print gscv.cv_results_.items()
-#print gscv.best_params_
+X = cv.fit_transform(contentslist)
+# gscv.fit(X, y)
+# print gscv.cv_results_.items()
+# print gscv.best_params_
 
 kf = KFold(n_splits=10, shuffle=False)
 

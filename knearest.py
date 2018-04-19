@@ -1,32 +1,28 @@
 import itertools as it
 from math import sqrt
-from sklearn.decomposition import TruncatedSVD
+
 
 class KNearest:
-    def __init__(self, k_neighbours=5, components=2):
+    def __init__(self, k_neighbours=5, dense=False):
         self.k_neighbours = k_neighbours
         self.data = list()
-        self.svd = None
-        self.components=components
+        self.dense = dense
             
 
     def fit(self, X, y):
         self.label_set = set(y)
-        self.svd = TruncatedSVD(n_components=self.components)
-        X = self.svd.fit_transform(X)
-            
         for con, lab in it.izip(X, y):
             self.data.append( (con, lab) )
 
 
+
     def predict(self, X_test):
-        predictions = list() 
-        X_test = self.svd.fit_transform(X_test)
+        predictions = list()
         for u in X_test:
             dists = list()
 
             for v, lab in self.data:
-                dists.append( (distance(u, v), lab) )
+                dists.append( (self.distance(u, v), lab) )
             dists = sorted(dists, key=lambda dist: dist[0])
 
             nearest = dists[:self.k_neighbours]
@@ -51,9 +47,14 @@ class KNearest:
         return maxkey
 
 
-def distance(U, V):
-    s = 0
-    for xu, xv in it.izip(U, V):
-        s += (xu - xv) ** 2
-    dist = sqrt(s)
-    return dist
+    def distance(self, U, V):
+        s = 0
+        if not self.dense:
+            U = U.toarray()
+            U = U[0]
+            V = V.toarray()
+            V = V[0]
+        for xu, xv in it.izip(U, V):
+            s += (xu - xv) ** 2
+        dist = sqrt(s)
+        return dist
