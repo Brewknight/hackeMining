@@ -22,7 +22,7 @@ class KNearest:
             dists = list()
 
             for v, lab in self.data:
-                dists.append( (self.distance(u, v), lab) )
+                dists.append( (self.__distance(u, v), lab) )
             dists = sorted(dists, key=lambda dist: dist[0])
 
             nearest = dists[:self.k_neighbours]
@@ -47,7 +47,7 @@ class KNearest:
         return maxkey
 
 
-    def distance(self, U, V):
+    def __distance(self, U, V):
         s = 0
         if not self.dense:
             U = U.toarray()

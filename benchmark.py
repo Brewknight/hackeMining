@@ -21,6 +21,6 @@ clf.fit(X, y)
 clf.predict(TestVector)
 
 with open("./datasets/testSet_categories.csv", mode="w+") as f:
-    f.write("Id\tCategory\n")
-Results = 
+#     f.write("Id\tCategory\n")
+# Results = 
     

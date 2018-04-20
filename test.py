@@ -14,13 +14,12 @@ import pandas as pd
 from sklearn.decomposition import TruncatedSVD
 
 original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
-train_data = original_train_data[0:7000]
-topred = original_train_data[7000:10000]
-#print topred
+train_data = original_train_data[0:100]
+topred = original_train_data[0:100]
 
 svd = TruncatedSVD(n_components=150)
 
-clf = KNN(k_neighbours=20, dense=True)
+clf = KNN(k_neighbours=1, dense=False)
 
 le = preprocessing.LabelEncoder()
 
