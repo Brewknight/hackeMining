@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
 
-clf = svm.SVC(kernel='rbf', C=10.0, gamma=0.0001)
+clf = svm.SVC(kernel='rbf', C=100, gamma=0.0001)
 n_components = 2
 f = open("./datasets/LSIaccuracy.csv", mode="w+")
 f.write("Components\tAccuracy\n")

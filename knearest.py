@@ -35,7 +35,7 @@ class KNearest:
         labels = dict()
         for l in self.label_set:
             labels[l] = 0
-        for dist, lab in dists:
+        for __dist, lab in dists:
             labels[lab] += 1
 
         maxval = 0

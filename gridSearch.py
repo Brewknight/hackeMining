@@ -43,3 +43,6 @@ svm_gscv.fit(X, y)
 print "SVM Best Params for Whole set:"
 print svm_gscv.best_params_
 
+
+# SVM Best Params for Whole set:
+# {'kernel': 'rbf', 'C': 100, 'gamma': 0.0001}
