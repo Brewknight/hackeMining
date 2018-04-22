@@ -23,10 +23,11 @@ from sklearn.metrics import accuracy_score
 # General Utility
 import pandas as pd
 import itertools as it
+import time
 
 
 original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
-original_train_data = original_train_data[0:150]
+#original_train_data = original_train_data[0:50]
 
 # Classifiers in a dict
 Classifiers = dict()
@@ -58,7 +59,8 @@ kf = KFold(n_splits=ksplits, shuffle=False)
 
 
 for key, clf in Classifiers.iteritems():
-    
+    start = time.time()
+
     if key == 'MultinomialNB':
         Xiter = XMNB
     else:
@@ -85,13 +87,12 @@ for key, clf in Classifiers.iteritems():
     avgf1 = f1s / ksplits
     avgacc = accs / ksplits
 
+    end = time.time()
+    duration = end - start
     print key
     print "Precision: " + str(avgprec)
     print "Recall: " + str(avgrec)
     print "F1: " + str(avgf1)
     print "Accuracy: " + str(avgacc)
+    print str(key) + " time : " + str(duration)
     print "\n"
-
-
-
-

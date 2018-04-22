@@ -5,10 +5,12 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 import itertools as it
 
 from stopwords import STOPWORDS
-
+import time
 
 # Title inclusion and stemming for now
 def preprocess(data, titling=True, stemming=True, stopwords=True):
+    
+    start = time.time()
     
     # Including Title in contents so we can use it to better identify a document
     if titling:
@@ -25,35 +27,43 @@ def preprocess(data, titling=True, stemming=True, stopwords=True):
             titledList.append(con)
         data = titledList
 
-    # Stop Words
-    if stopwords:
-        allstop = list()
-        for doc in data:
-            words = word_tokenize(doc.decode("utf-8"))
 
-            # Exclude stopwords
-            nostoplist = list()
-            nostop = ""
-            for word in words:
-                if word in STOPWORDS:
-                    continue
-                nostoplist.append(word)
-                nostop += (word +  " ")
-            allstop.append(nostop)
-        data = allstop
-
-    # Stemming
-    if stemming:
+    if stemming: 
         ps = PorterStemmer()
         stemmedlist = list()
         for doc in data:
-            words = word_tokenize(doc)
+            words = word_tokenize(doc.decode("utf-8"))
 
-            # Stem words
+            # Stem
             stemmed = ""
-            for word in nostop:
+            for word in words:   
+                # Exclude Stopwords
+                if stopwords:          
+                    if word in STOPWORDS:
+                        continue
                 stemmed += (ps.stem(word) + " ")
             stemmedlist.append(stemmed)
         data = stemmedlist
 
+    # Stop Words
+    if stopwords and not stemming:
+        nostoplist = list()
+        for doc in data:
+            words = word_tokenize(doc.decode("utf-8"))
+
+            # Exclude stopwords
+            nostop = ""
+            for word in words:
+                if word in STOPWORDS:
+                    continue
+                nostop += (word +  " ")
+            nostoplist.append(nostop)
+        data = nostoplist
+
+
+
+    end = time.time()
+
+    duration = end - start
+    print "Preprocessing time : " + str(duration)
     return data
