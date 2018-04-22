@@ -26,21 +26,21 @@ import itertools as it
 import time
 
 
-original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
-#original_train_data = original_train_data[0:50]
+original_train_data = pd.read_csv("../datasets/train_set.csv", sep="\t")
+original_train_data = original_train_data[0:100]
 
 # Classifiers in a dict
 Classifiers = dict()
 Classifiers['RandomForest'] = RandomForestClassifier()
 Classifiers['SupportVector'] = svm.SVC(C=100, kernel='rbf', gamma=0.0001)
 Classifiers['MultinomialNB'] = MultinomialNB()
-#Classifiers['KNearest'] = KNN(k_neighbours=20, dense=True)
+Classifiers['KNearest'] = KNN(k_neighbours=15, dense=False, balanced=False)
 
 #clf = Classifiers['MultinomialNB']
 svd = TruncatedSVD(n_components=100)
-mms = preprocessing.MinMaxScaler(feature_range=(0, 100))
 
 X = preprocess(original_train_data)
+#X = original_train_data['Content']
 
 le = preprocessing.LabelEncoder()
 
@@ -49,7 +49,6 @@ y = le.fit_transform(original_train_data['Category'])
 cv = CountVectorizer()
 X = cv.fit_transform(X)
 
-# Truncating and MinMaxScaling. MinMaxScaling is used for NaiveBayes, since TruncateSVD returns negative values
 XMNB = X
 Xelse = svd.fit_transform(X)
 
