@@ -44,9 +44,11 @@ class KDTree:
         lefts = list()
         rights = list()
         
+        # Assign median value in current node
+        # and divide data to left and right child
         if self.balanced:
             data = sorted(data, key=lambda t: t[0][dimension])
-            Node.value = data[int(len(data) / 2)][0][dimension] # Assign median value in current node
+            Node.value = data[int(len(data) / 2)][0][dimension] 
             lefts = data[ : int(len(data) / 2) ]
             rights = data[int(len(data) / 2) : ]
         else:
@@ -58,28 +60,46 @@ class KDTree:
                 else:
                     rights.append(t)
 
+        # If left or right do not exist, don't create the node.
+        # Searching will stop there.
+        if not lefts:
+            Node.left = None
+        if not rights:
+            Node.right = None
+
         if dimension >= self.dimensions: # If we reached maximum depth, create buckets and return Node
-            Node.left = self.__Bucket(lefts)
-            Node.right = self.__Bucket(rights)
+            if lefts:
+                Node.left = self.__Bucket(lefts)
+            if rights:
+                Node.right = self.__Bucket(rights)
             return Node
 
         else: # Otherwise create left and right children-nodes of current node recursively
-            Node.left = self.__KDNode()
-            Node.right = self.__KDNode()
-
-            Node.left = self.create(Node.left, lefts, dimension + 1)
-            Node.right = self.create(Node.right, rights, dimension + 1)
+            if lefts:
+                Node.left = self.__KDNode()
+                Node.left = self.create(Node.left, lefts, dimension + 1)
+            if rights:
+                Node.right = self.__KDNode()
+                Node.right = self.create(Node.right, rights, dimension + 1)
             return Node
 
     # Typical binary tree recursive search
     def __recsearch(self, node, vector, dimension):
+        # Returns whole bucket
         if dimension > self.dimensions:
             return node.vectors
 
+        # If one node does not eixst, search the other node. This guarantees there will neighbours to search
         if vector[dimension] < node.value:
-            return self.__recsearch(node.left, vector, dimension + 1)
+            if node.left:
+                return self.__recsearch(node.left, vector, dimension + 1)
+            else: 
+                return self.__recsearch(node.right, vector, dimension + 1)
         else:
-            return self.__recsearch(node.right, vector, dimension + 1)
+            if node.right:
+                return self.__recsearch(node.right, vector, dimension + 1)
+            else:
+                return self.__recsearch(node.left, vector, dimension + 1)
 
     def search(self, vector):
         return self.__recsearch(self.root, vector, 0)

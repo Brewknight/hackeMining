@@ -1,6 +1,6 @@
 
 from nltk.stem import PorterStemmer
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import word_tokenize
 
 import itertools as it
 
@@ -22,7 +22,7 @@ def preprocess(data, titling=True, stemming=True, stopwords=True):
             length = len(words)
             titwords = tit.split()
             titlength = len(titwords)
-            for i in xrange((length / titlength) / 10):
+            for _i in xrange((length / titlength) / 10):
                 con += (" " + tit)
             titledList.append(con)
         data = titledList

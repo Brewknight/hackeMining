@@ -24,39 +24,26 @@ import pandas as pd
 import itertools as it
 import matplotlib.pyplot as plt
 
-original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
+original_train_data = pd.read_csv("../datasets/train_set.csv", sep="\t")
 
-clf = svm.SVC(kernel='rbf', C=100, gamma=0.0001)
+clf = KNN(k_neighbours=15, dense=True, balanced=True)
 n_components = 2
-f = open("./datasets/LSIaccuracy.csv", mode="w+")
+
+f = open("../datasets/LSIaccuracy.csv", mode="w+")
 f.write("Components\tAccuracy\n")
-while(n_components <= 100):
+
+while(n_components <= 500):
     svd = TruncatedSVD(n_components=n_components)
-    #mms = preprocessing.MinMaxScaler(feature_range=(0, 10))
-
-
-    # Including Title in contents so we can use it to better identify a document
-    titles = original_train_data['Title']
-    contents = original_train_data['Content']
-    contentslist = list()
-    for tit, con, in it.izip(titles, contents):
-        words = con.split()
-        length = len(words)
-        titwords = tit.split()
-        titlength = len(tit)
-        for i in xrange((length / titlength) / 10):
-            con += tit
-        contentslist.append(con)
 
     le = preprocessing.LabelEncoder()
 
     y = le.fit_transform(original_train_data['Category'])
 
     cv = CountVectorizer(stop_words=ENGLISH_STOP_WORDS)
-    X = cv.fit_transform(contentslist)
-    # Truncating and MinMaxScaling. MinMaxScaling is used for NaiveBayes, since TruncateSVD returns negative values
+
+    X = cv.fit_transform(original_train_data['Content'])
+
     X = svd.fit_transform(X)
-    #X = mms.fit_transform(X)
 
     ksplits = 10
     kf = KFold(n_splits=ksplits, shuffle=False)
@@ -82,8 +69,7 @@ while(n_components <= 100):
     n_components += 5
 
 f.close()
-data = pd.read_csv("./datasets/LSIaccuracy.csv", sep="\t")
+data = pd.read_csv("../datasets/LSIaccuracy.csv", sep="\t")
 
 plt.plot(data['Components'], data['Accuracy'])
 plt.show()
-plt.savefig("LSIaccuracy.png")

@@ -2,8 +2,6 @@
 from stopwords import STOPWORDS
 from preprocess import preprocess
 from sklearn.feature_extraction.text import CountVectorizer
-from nltk.stem import PorterStemmer
-from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn import preprocessing
 from sklearn.model_selection import KFold
 from sklearn.decomposition import TruncatedSVD
@@ -27,26 +25,23 @@ import time
 
 
 original_train_data = pd.read_csv("../datasets/train_set.csv", sep="\t")
-original_train_data = original_train_data[0:100]
 
 # Classifiers in a dict
 Classifiers = dict()
 Classifiers['RandomForest'] = RandomForestClassifier()
 Classifiers['SupportVector'] = svm.SVC(C=100, kernel='rbf', gamma=0.0001)
 Classifiers['MultinomialNB'] = MultinomialNB()
-Classifiers['KNearest'] = KNN(k_neighbours=15, dense=False, balanced=False)
+Classifiers['KNearest'] = KNN(k_neighbours=15, dense=True, balanced=True)
 
-#clf = Classifiers['MultinomialNB']
 svd = TruncatedSVD(n_components=100)
 
-X = preprocess(original_train_data)
-#X = original_train_data['Content']
+X = original_train_data['Content']
 
 le = preprocessing.LabelEncoder()
 
 y = le.fit_transform(original_train_data['Category'])
 
-cv = CountVectorizer()
+cv = CountVectorizer(stop_words=STOPWORDS)
 X = cv.fit_transform(X)
 
 XMNB = X
@@ -54,7 +49,6 @@ Xelse = svd.fit_transform(X)
 
 ksplits = 10
 kf = KFold(n_splits=ksplits, shuffle=False)
-
 
 
 for key, clf in Classifiers.iteritems():
@@ -69,8 +63,9 @@ for key, clf in Classifiers.iteritems():
     recs = 0
     f1s = 0
     accs = 0
+
     for train_index, test_index in kf.split(Xiter):
-        X_train, X_test = X[train_index], X[test_index]
+        X_train, X_test = Xiter[train_index], Xiter[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
         clf.fit(X_train, y_train)    
@@ -88,7 +83,7 @@ for key, clf in Classifiers.iteritems():
 
     end = time.time()
     duration = end - start
-    print key
+    print key 
     print "Precision: " + str(avgprec)
     print "Recall: " + str(avgrec)
     print "F1: " + str(avgf1)
