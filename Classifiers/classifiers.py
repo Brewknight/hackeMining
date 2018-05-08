@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import svm
 from knearest import KNearest as KNN
+from mymethod import mymethod
 
 # Metrics
 from sklearn.metrics import precision_score
@@ -21,17 +22,23 @@ from sklearn.metrics import accuracy_score
 # General Utility
 import pandas as pd
 import itertools as it
-import time
 
 
 original_train_data = pd.read_csv("../datasets/train_set.csv", sep="\t")
 
 # Classifiers in a dict
 Classifiers = dict()
+Classifiers['MultinomialNB'] = MultinomialNB()
 Classifiers['RandomForest'] = RandomForestClassifier()
 Classifiers['SupportVector'] = svm.SVC(C=100, kernel='rbf', gamma=0.0001)
-Classifiers['MultinomialNB'] = MultinomialNB()
 Classifiers['KNearest'] = KNN(k_neighbours=15, dense=True, balanced=True)
+
+Scores = dict()
+Scores['RandomForest'] = list()
+Scores['SupportVector'] = list()
+Scores['MultinomialNB'] = list()
+Scores['KNearest'] = list()
+Scores['MyMethod'] = list()
 
 svd = TruncatedSVD(n_components=100)
 
@@ -50,9 +57,7 @@ Xelse = svd.fit_transform(X)
 ksplits = 10
 kf = KFold(n_splits=ksplits, shuffle=False)
 
-
 for key, clf in Classifiers.iteritems():
-    start = time.time()
 
     if key == 'MultinomialNB':
         Xiter = XMNB
@@ -81,12 +86,31 @@ for key, clf in Classifiers.iteritems():
     avgf1 = f1s / ksplits
     avgacc = accs / ksplits
 
-    end = time.time()
-    duration = end - start
-    print key 
-    print "Precision: " + str(avgprec)
-    print "Recall: " + str(avgrec)
-    print "F1: " + str(avgf1)
-    print "Accuracy: " + str(avgacc)
-    print str(key) + " time : " + str(duration)
-    print "\n"
+    Scores[key].append(avgacc)
+    Scores[key].append(avgprec)
+    Scores[key].append(avgrec)
+    Scores[key].append(avgf1)
+
+Scores['MyMethod'] = mymethod()
+
+f = open("../datasets/EvaluationMetric_10fold.csv", mode="w+")
+
+f.write("Statistic Measure\tNaive Bayes\tRandom Forest\tSVM\tKNN\tMy Method\n")
+
+for i in xrange(4):
+    if i == 0:
+        f.write("Accuracy")
+    if i == 1:
+        f.write("Precision")
+    if i == 2:
+        f.write("Recall")
+    if i == 3:
+        f.write("F-Measure")
+    
+    f.write("\t" + str(Scores['MultinomialNB'][i]))
+    f.write("\t" + str(Scores['RandomForest'][i]))
+    f.write("\t" + str(Scores['SupportVector'][i]))
+    f.write("\t" + str(Scores['KNearest'][i]))
+    f.write("\t" + str(Scores['MyMethod'][i]))
+    f.write("\n")
+f.close()

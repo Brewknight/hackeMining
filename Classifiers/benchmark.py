@@ -46,10 +46,10 @@ print "time : " + str(end - start)
 
 f = open("../datasets/testSet_categories.csv", mode="w+")
 
-f.write("Id,Category\n")
+f.write("Id\tCategory\n")
 
 for ID, Cat in izip(test_data['Id'], le.inverse_transform(predictions)):
-    f.write(str(ID) + "," + Cat + "\n")
-f.close
+    f.write(str(ID) + "\t" + Cat + "\n")
+f.close()
 
     
