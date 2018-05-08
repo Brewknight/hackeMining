@@ -2,8 +2,6 @@
 from stopwords import STOPWORDS
 from preprocess import preprocess
 from sklearn.feature_extraction.text import CountVectorizer
-from nltk.stem import PorterStemmer
-from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn import preprocessing
 from sklearn.model_selection import KFold
 from sklearn.decomposition import TruncatedSVD
@@ -13,6 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import svm
 from knearest import KNearest as KNN
+from mymethod import mymethod
 
 # Metrics
 from sklearn.metrics import precision_score
@@ -23,43 +22,42 @@ from sklearn.metrics import accuracy_score
 # General Utility
 import pandas as pd
 import itertools as it
-import time
 
 
-original_train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
-#original_train_data = original_train_data[0:50]
+original_train_data = pd.read_csv("../datasets/train_set.csv", sep="\t")
 
 # Classifiers in a dict
 Classifiers = dict()
+Classifiers['MultinomialNB'] = MultinomialNB()
 Classifiers['RandomForest'] = RandomForestClassifier()
 Classifiers['SupportVector'] = svm.SVC(C=100, kernel='rbf', gamma=0.0001)
-Classifiers['MultinomialNB'] = MultinomialNB()
-#Classifiers['KNearest'] = KNN(k_neighbours=20, dense=True)
+Classifiers['KNearest'] = KNN(k_neighbours=15, dense=True, balanced=True)
 
-#clf = Classifiers['MultinomialNB']
+Scores = dict()
+Scores['RandomForest'] = list()
+Scores['SupportVector'] = list()
+Scores['MultinomialNB'] = list()
+Scores['KNearest'] = list()
+Scores['MyMethod'] = list()
+
 svd = TruncatedSVD(n_components=100)
-mms = preprocessing.MinMaxScaler(feature_range=(0, 100))
 
-X = preprocess(original_train_data)
+X = original_train_data['Content']
 
 le = preprocessing.LabelEncoder()
 
 y = le.fit_transform(original_train_data['Category'])
 
-cv = CountVectorizer()
+cv = CountVectorizer(stop_words=STOPWORDS)
 X = cv.fit_transform(X)
 
-# Truncating and MinMaxScaling. MinMaxScaling is used for NaiveBayes, since TruncateSVD returns negative values
 XMNB = X
 Xelse = svd.fit_transform(X)
 
 ksplits = 10
 kf = KFold(n_splits=ksplits, shuffle=False)
 
-
-
 for key, clf in Classifiers.iteritems():
-    start = time.time()
 
     if key == 'MultinomialNB':
         Xiter = XMNB
@@ -70,8 +68,9 @@ for key, clf in Classifiers.iteritems():
     recs = 0
     f1s = 0
     accs = 0
+
     for train_index, test_index in kf.split(Xiter):
-        X_train, X_test = X[train_index], X[test_index]
+        X_train, X_test = Xiter[train_index], Xiter[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
         clf.fit(X_train, y_train)    
@@ -87,12 +86,31 @@ for key, clf in Classifiers.iteritems():
     avgf1 = f1s / ksplits
     avgacc = accs / ksplits
 
-    end = time.time()
-    duration = end - start
-    print key
-    print "Precision: " + str(avgprec)
-    print "Recall: " + str(avgrec)
-    print "F1: " + str(avgf1)
-    print "Accuracy: " + str(avgacc)
-    print str(key) + " time : " + str(duration)
-    print "\n"
+    Scores[key].append(avgacc)
+    Scores[key].append(avgprec)
+    Scores[key].append(avgrec)
+    Scores[key].append(avgf1)
+
+Scores['MyMethod'] = mymethod()
+
+f = open("../datasets/EvaluationMetric_10fold.csv", mode="w+")
+
+f.write("Statistic Measure\tNaive Bayes\tRandom Forest\tSVM\tKNN\tMy Method\n")
+
+for i in xrange(4):
+    if i == 0:
+        f.write("Accuracy")
+    if i == 1:
+        f.write("Precision")
+    if i == 2:
+        f.write("Recall")
+    if i == 3:
+        f.write("F-Measure")
+    
+    f.write("\t" + str(Scores['MultinomialNB'][i]))
+    f.write("\t" + str(Scores['RandomForest'][i]))
+    f.write("\t" + str(Scores['SupportVector'][i]))
+    f.write("\t" + str(Scores['KNearest'][i]))
+    f.write("\t" + str(Scores['MyMethod'][i]))
+    f.write("\n")
+f.close()

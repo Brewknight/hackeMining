@@ -4,10 +4,10 @@ from wordcloud import WordCloud
 from stopwords import STOPWORDS
 import os
 
-if not os.path.exists("./clouds"):
-    os.makedirs("./clouds")
+# if not os.path.exists("./clouds"):
+#     os.makedirs("./clouds")
 
-train_data = pd.read_csv("./datasets/train_set.csv", sep="\t")
+train_data = pd.read_csv("../datasets/train_set.csv", sep="\t")
 
 cm = dict()
 Categories = set(train_data['Category'])
